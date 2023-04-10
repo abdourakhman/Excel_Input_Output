@@ -9,7 +9,7 @@ public class Test {
             file_xls.chooseSheet(1);
             file_xls.writeCell(16, 3, 2000);
             file_xls.writeCell(16, 4, 10);
-            file_xls.writeCell(16, 5, 15);
+            file_xls.writeCell(16, 5, 13);
             System.out.println(file_xls.readCell(16, 6));
             System.out.println(file_xls.readCell(14,2 ));
 
