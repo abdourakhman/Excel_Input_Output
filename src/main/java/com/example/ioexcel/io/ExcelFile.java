@@ -1,113 +1,124 @@
 package com.example.ioexcel.io;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelFile {
-    private File file;
     private XSSFWorkbook workbook ;
     private Sheet sheet;
-    private int number = 1;
+    private File file;
+    private int sheetNumber = 1;
 
-    public ExcelFile(){}
-    public ExcelFile(File file) { 
-        this.file = file;
-        try {
-            this.workbook = new XSSFWorkbook(new FileInputStream(this.file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    //constructors
+    public ExcelFile() {
     }
-
-    public ExcelFile(Workbook workbook){ 
-        this.workbook = new XSSFWorkbook();
-    }
-
-    public void setNumber(int number){
-        this.number = number;
+    public ExcelFile(String file){        
+        try (InputStream fileStream = new FileInputStream(file)) {
+            this.file = new File(file);
+            this.workbook = new XSSFWorkbook(fileStream);
+            //Toutes les cellules de calcul sont recalculées avant la lecture
+            this.workbook.setForceFormulaRecalculation(true);
+        }catch(Exception e){System.err.println("Problème rencontré ! Verifiez si le fichier existe...");}
     }
 
-    public int getNumber(int number){
-        return this.number;
-    }
-    
-    public void setFile(File file){this.file = file;}
-
-    public File getFile() {
-        return file;
-    }
-    public XSSFWorkbook getWorkbook() {
-        return workbook;
-    }
-    public void setWorkbook(XSSFWorkbook workbook) {
-        this.workbook = workbook;
-    }
-    public Sheet getSheet(int number){
-        return this.workbook.getSheetAt(number-1);
-    }
-
-    public Sheet getSheet(String name){
-        return this.workbook.getSheet(name);
-    }
+    //getter & setters
     public Sheet getSheet() {
         return sheet;
     }
     public void setSheet(Sheet sheet) {
         this.sheet = sheet;
     }
-    public void setSheet(int number) {
-        //TODO gerer le cas ou la feuille n'existe pas !
-        this.sheet = this.workbook.getSheetAt(number-1);
+    public int getSheetNumber() {
+        return sheetNumber;
     }
-
+    public void setSheetNumber(int sheetNumber) {
+        this.sheetNumber = sheetNumber;
+    }
+    
+    //methods Input output
     public Object readCell(int row, int column){
-        Cell cell = this.sheet.getRow(row-1).getCell(column-1);
-
-        DataFormatter formatter = new DataFormatter();
-        switch (cell.getCellType()) 
-        {
-            // Cell.CELL_TYPE_NUMERIC dans les versions < 4.0.0 
+        
+        Cell cell = this.sheet.createRow(this.sheet.getLastRowNum()+1).createCell(0); 
+        if(this.sheet.getRow(row-1) == null){
+           cell =  this.sheet.createRow(row-1).createCell(column-1);
+        }
+        else if(this.sheet.getRow(row-1).getCell(column-1) == null){
+           cell = this.sheet.getRow(row-1).createCell(column-1);
+        }else{
+           cell = this.sheet.getRow(row-1).getCell(column-1);
+        }
+        FormulaEvaluator evaluator = this.workbook.getCreationHelper().createFormulaEvaluator(); 
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
             case NUMERIC:
-                String numericValue = formatter.formatCellValue(sheet.getRow(row-1).getCell(column-1));
-                return Double.valueOf(numericValue);
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    cell.getDateCellValue();
+                } else {
+                    cell.getNumericCellValue();
+                }
+            case BOOLEAN:
+                return cell.getBooleanCellValue();
+            case BLANK:
+                return "Cellule Vide";
+            case FORMULA:
+                CellValue cellValue = evaluator.evaluate(cell);
+                switch(cellValue.getCellType()){
+                    case STRING:
+                        return cellValue.getStringValue();
+                    case NUMERIC:
+                        return cellValue.getNumberValue();
+                    case BOOLEAN:
+                        return cellValue.getBooleanValue();
+                    default:
+                    return "NEANT";
+                }
             default:
-                String stringValue = formatter.formatCellValue(sheet.getRow(row-1).getCell(column-1));
-                return stringValue;
+                return null;
         }
     }
-
-    public void writeOnCell(int row, int column, Object data) throws IOException{
+    
+    public void writeCell(int row, int column, Object data) throws IOException{
+        
         if(data instanceof String)
-        this.sheet.getRow(row-1).createCell(column-1).setCellValue((String)data);
+            if(this.sheet.getRow(-1) == null)
+                this.sheet.createRow(row-1).createCell(column-1).setCellValue((String)data);
+            else
+                this.sheet.getRow(row-1).createCell(column-1).setCellValue((String)data);
         else if(data instanceof Integer)
-        this.sheet.getRow(row-1).createCell(column-1).setCellValue((Integer)data);
+            if(this.sheet.getRow(row-1) == null)
+                this.sheet.createRow(row-1).createCell(column-1).setCellValue((Integer)data);
+            else
+                this.sheet.getRow(row-1).createCell(column-1).setCellValue((Integer)data);
         else if(data instanceof Float)
-            this.sheet.getRow(row-1).createCell(column-1).setCellValue((Float)data);
+            if(this.sheet.getRow(row-1) == null)
+                this.sheet.createRow(row-1).createCell(column-1).setCellValue((Float)data);
+            else
+                this.sheet.getRow(row-1).createCell(column-1).setCellValue((Float)data);
         
         //mis a jour sur le fichier physique
         FileOutputStream output = new FileOutputStream(this.file);
         this.sheet.getWorkbook().write(output);
         output.close();
-
     }
-    
-    public void performFormula(int row, int column, String formula){
-        this.sheet.createRow(row-1).createCell(column-1).setCellFormula(formula);
-        try (//mis a jour sur le fichier physique
-        FileOutputStream output = new FileOutputStream(this.file)) {
-            this.sheet.getWorkbook().write(output);
-            output.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+    public void chooseSheet(int number){
+        this.sheetNumber = number-1;
+        try {
+            this.sheet = this.workbook.getSheetAt(sheetNumber);
+        } catch (Exception e) {
+            System.err.println("Vous essayez d'accéder à une feuille Alors qu'un problème a été détecté lors de l'ouverture du fichier");
         }
     }
-
 }
