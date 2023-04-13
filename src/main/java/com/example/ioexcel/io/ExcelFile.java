@@ -48,8 +48,8 @@ public class ExcelFile {
     
     //methods Input output
     public Object readCell(int row, int column){
-        
-        Cell cell = this.sheet.createRow(this.sheet.getLastRowNum()+1).createCell(0); 
+        // 1048575 max row number
+        Cell cell = this.sheet.createRow(1048575).createCell(0); 
         if(this.sheet.getRow(row-1) == null){
            cell =  this.sheet.createRow(row-1).createCell(column-1);
         }
