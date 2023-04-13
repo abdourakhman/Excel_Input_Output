@@ -5,14 +5,9 @@ package com.example.ioexcel.io;
 public class Test {
     public static void main(String[] args) {
         try {
-            ExcelFile file_xls = new ExcelFile("fruitDataset.xlsx"); 
+            ExcelFile file_xls = new ExcelFile("Canevas.xlsx"); 
             file_xls.chooseSheet(1);
-            file_xls.writeCell(16, 3, 2000);
-            file_xls.writeCell(16, 4, 10);
-            file_xls.writeCell(16, 5, 13);
-            System.out.println(file_xls.readCell(16, 6));
-            System.out.println(file_xls.readCell(14,2 ));
-
+            file_xls.readCell(3, 1);
         } catch (Exception e) {
             e.printStackTrace();
         }

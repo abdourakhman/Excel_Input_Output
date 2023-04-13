@@ -64,9 +64,9 @@ public class ExcelFile {
                 return cell.getStringCellValue();
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
-                    cell.getDateCellValue();
+                    return cell.getDateCellValue();
                 } else {
-                    cell.getNumericCellValue();
+                    return cell.getNumericCellValue();
                 }
             case BOOLEAN:
                 return cell.getBooleanCellValue();
