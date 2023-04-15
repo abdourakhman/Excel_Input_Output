@@ -6,9 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -50,6 +53,7 @@ public class ExcelFile {
     public Object readCell(int row, int column){
         // 1048575 max row number
         Cell cell = this.sheet.createRow(1048575).createCell(0); 
+        
         if(this.sheet.getRow(row-1) == null){
            cell =  this.sheet.createRow(row-1).createCell(column-1);
         }
@@ -65,54 +69,86 @@ public class ExcelFile {
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
                     return cell.getDateCellValue();
-                } else {
+                } 
+                if (cell.getNumericCellValue() %2 == 0)
+                    return (int)cell.getNumericCellValue();
+                else
                     return cell.getNumericCellValue();
-                }
             case BOOLEAN:
                 return cell.getBooleanCellValue();
             case BLANK:
-                return "Cellule Vide";
+                return "NEANT";
             case FORMULA:
                 CellValue cellValue = evaluator.evaluate(cell);
                 switch(cellValue.getCellType()){
                     case STRING:
                         return cellValue.getStringValue();
                     case NUMERIC:
-                        return cellValue.getNumberValue();
+                        if (cellValue.getNumberValue() %2 == 0)
+                            return ((int)cellValue.getNumberValue());
+                        else
+                            return cellValue.getNumberValue();
                     case BOOLEAN:
                         return cellValue.getBooleanValue();
                     default:
-                    return "NEANT";
+                        return "NEANT";
                 }
             default:
                 return null;
         }
     }
-    
-    public void writeCell(int row, int column, Object data) throws IOException{
-        
-        if(data instanceof String)
-            if(this.sheet.getRow(-1) == null)
-                this.sheet.createRow(row-1).createCell(column-1).setCellValue((String)data);
-            else
-                this.sheet.getRow(row-1).createCell(column-1).setCellValue((String)data);
-        else if(data instanceof Integer)
-            if(this.sheet.getRow(row-1) == null)
-                this.sheet.createRow(row-1).createCell(column-1).setCellValue((Integer)data);
-            else
-                this.sheet.getRow(row-1).createCell(column-1).setCellValue((Integer)data);
-        else if(data instanceof Float)
-            if(this.sheet.getRow(row-1) == null)
-                this.sheet.createRow(row-1).createCell(column-1).setCellValue((Float)data);
-            else
-                this.sheet.getRow(row-1).createCell(column-1).setCellValue((Float)data);
-        
+
+    public void writeCell(int row, int column, Object value) throws IOException{
+        Cell cell = null;
+        if(this.sheet.getRow(row-1) == null){
+            cell = this.sheet.createRow(row-1).createCell(column-1);
+        }
+        else if(this.sheet.getRow(row-1).getCell(column-1) == null){
+            cell = this.sheet.getRow(row-1).createCell(column-1);
+        }else{
+            cell = this.sheet.getRow(row-1).getCell(column-1);
+        }
+        if(value instanceof String){
+            cell.setCellValue((String)value);
+            // Set cell format to "Standard"
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("General"));
+            cell.setCellStyle(style);
+        }
+        else if(value instanceof Number){
+            cell.setCellValue(((Number)value).doubleValue());
+            // Set cell format to "Standard"
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("General"));
+            cell.setCellStyle(style);
+        }
+        else if(value instanceof Date){
+            cell.setCellValue((Date)value);
+            // Set cell format to "Date"
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("dd/MM/yyyy"));
+            cell.setCellStyle(style);
+        }
+        else if(value instanceof Boolean){
+            cell.setCellValue((Boolean)value);
+            // Set cell format to "Standard"
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("General"));
+            cell.setCellStyle(style);
+        }
+        else{
+            cell.setCellValue("");
+        }
         //mis a jour sur le fichier physique
         FileOutputStream output = new FileOutputStream(this.file);
         this.sheet.getWorkbook().write(output);
         output.close();
     }
-
+    
     public void chooseSheet(int number){
         this.sheetNumber = number-1;
         try {
@@ -121,4 +157,5 @@ public class ExcelFile {
             System.err.println("Vous essayez d'accéder à une feuille Alors qu'un problème a été détecté lors de l'ouverture du fichier");
         }
     }
+
 }
