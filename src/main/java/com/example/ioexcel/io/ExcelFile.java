@@ -98,6 +98,7 @@ public class ExcelFile {
         }
     }
 
+    
     public void writeCell(int row, int column, Object value) throws IOException{
         Cell cell = null;
         if(this.sheet.getRow(row-1) == null){
@@ -148,6 +149,64 @@ public class ExcelFile {
         this.sheet.getWorkbook().write(output);
         output.close();
     }
+    
+    
+    /*
+     * General: le format de cellule par défaut qui est utilisé pour les données générales.
+     * Number: le format de cellule qui est utilisé pour les nombres.
+     * Currency: le format de cellule qui est utilisé pour les valeurs monétaires.
+     * Date: le format de cellule qui est utilisé pour les dates.
+     * Time: le format de cellule qui est utilisé pour les heures.
+     * %: le format de cellule qui est utilisé pour les pourcentages.
+     * Scientific: le format de cellule qui est utilisé pour les nombres en notation scientifique.
+     * Text: le format de cellule qui est utilisé pour le texte.
+     */
+    public void writeCell(int row, int column, Object value, String format) throws IOException {
+        Cell cell = null;
+        if (this.sheet.getRow(row - 1) == null) {
+            cell = this.sheet.createRow(row - 1).createCell(column - 1);
+        } else if (this.sheet.getRow(row - 1).getCell(column - 1) == null) {
+            cell = this.sheet.getRow(row - 1).createCell(column - 1);
+        } else {
+            cell = this.sheet.getRow(row - 1).getCell(column - 1);
+        }
+        if (value instanceof String) {
+            cell.setCellValue((String)value);
+            // Set cell format to "General"
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("General"));
+            cell.setCellStyle(style);
+        } else if (value instanceof Number) {
+            cell.setCellValue(((Number)value).doubleValue());
+            // Set cell format to specified format
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat(format));
+            cell.setCellStyle(style);
+        } else if (value instanceof Date) {
+            cell.setCellValue((Date)value);
+            // Set cell format to "dd/MM/yyyy"
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("dd/MM/yyyy"));
+            cell.setCellStyle(style);
+        } else if (value instanceof Boolean) {
+            cell.setCellValue((Boolean)value);
+            // Set cell format to "General"
+            CellStyle style = this.workbook.createCellStyle();
+            DataFormat dataFormat = this.workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("General"));
+            cell.setCellStyle(style);
+        } else {
+            cell.setCellValue("");
+        }
+        // Write changes to file
+        FileOutputStream output = new FileOutputStream(this.file);
+        this.sheet.getWorkbook().write(output);
+        output.close();
+    }
+    
     
     public void chooseSheet(int number){
         this.sheetNumber = number-1;
