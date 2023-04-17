@@ -84,9 +84,6 @@ public class ExcelFile {
                     case STRING:
                         return cellValue.getStringValue();
                     case NUMERIC:
-                        if (cellValue.getNumberValue() %2 == 0)
-                            return ((int)cellValue.getNumberValue());
-                        else
                             return cellValue.getNumberValue();
                     case BOOLEAN:
                         return cellValue.getBooleanValue();
