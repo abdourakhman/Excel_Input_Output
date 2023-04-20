@@ -77,7 +77,7 @@ public class ExcelFile {
             case BOOLEAN:
                 return cell.getBooleanCellValue();
             case BLANK:
-                return "NEANT";
+                return "VIDE";
             case FORMULA:
                 CellValue cellValue = evaluator.evaluate(cell);
                 switch(cellValue.getCellType()){
@@ -88,10 +88,10 @@ public class ExcelFile {
                     case BOOLEAN:
                         return cellValue.getBooleanValue();
                     default:
-                        return "NEANT";
+                        return "VIDE";
                 }
             default:
-                return null;
+                return 0;
         }
     }
 
