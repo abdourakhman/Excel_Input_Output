@@ -623,7 +623,7 @@ public class Test {
         double TRI;
     //************************FIN DECLARATION VARIABLES**************************** 
 
-        ExcelFile file_xls = new ExcelFile("Canevas3.xlsx"); 
+        ExcelFile file_xls = new ExcelFile("Canevas1.xlsx"); 
         file_xls.chooseSheet(4);
 
        //********************************INSERTION****************************
@@ -638,34 +638,65 @@ public class Test {
         file_xls.writeCell(5, 9, 64);
         file_xls.writeCell(5, 10, 2026);
         file_xls.writeCell(5, 12, 2);
-
+        
+        //test pour que toute les entréés soient des nombres
+        file_xls.writeCell(6, 1, 1,"text");
+        file_xls.writeCell(6, 2, "Commerces/ restauration");
+        file_xls.writeCell(6, 3, "Benslimane");
+        file_xls.writeCell(6, 4, 50,"text");
+        file_xls.writeCell(6, 5, 0,"text");
+        file_xls.writeCell(6, 6, 1,"text");
+        file_xls.writeCell(6, 7, 0,"text");
+        file_xls.writeCell(6, 8, 16,"text");
+        file_xls.writeCell(6, 9, 64,"text");
+        file_xls.writeCell(6, 10, 2026,"text");
+        file_xls.writeCell(6, 12, 2,"text");
         
 
         // Quote part TES
         file_xls.writeCell(5, 204, 0.3,"0%");
+        //test
+        file_xls.writeCell(6, 204, "30%","text");
         
         // TO & DMS 					
         file_xls.writeCell(5, 209, 0.5,"0%");
         file_xls.writeCell(5, 210, 2);
         file_xls.writeCell(5, 211, 1.2);
+        
+        //test
+        file_xls.writeCell(6, 209, "50%","text");
+        file_xls.writeCell(6, 210, 2,"text");
+        file_xls.writeCell(6, 211, 1.2,"text");
 
         // Flux aéroports 
         file_xls.writeCell(5, 297, 1,"0%");
+        //test
+        file_xls.writeCell(6, 297, "100%","text");
 
         // Arrivées TES aérien (millions de touristes) 																			
+        
         file_xls.writeCell(5, 318,0,"0%");//0% arrivées doubleernes par aérien
+        file_xls.writeCell(6, 318,"0%","text");//0% arrivées doubleernes par aérien
 
         // Arrivées doubleerne aérien (millions de touristes) 	
         file_xls.writeCell(5, 339,"Mohammed V"); //Aéroport utilisé
+        file_xls.writeCell(6, 339,"Mohammed V"); //Aéroport utilisé
         
         // Charges exploitation					
         file_xls.writeCell(5, 341, 60000);// Salaire moyen par employé - DH/an
+        file_xls.writeCell(6, 341, 60000,"text");// Salaire moyen par employé - DH/an
 
         file_xls.writeCell(5, 342, 0.6,"0%");
         file_xls.writeCell(5, 343, 0.9,"0%");
         file_xls.writeCell(5, 344, 1.2,"0%");
         file_xls.writeCell(5, 345, 1.24,"0%");
         file_xls.writeCell(5, 346, 0.02,"0%");
+
+        file_xls.writeCell(6, 342, 0.6,"text");
+        file_xls.writeCell(6, 343, 0.9,"text");
+        file_xls.writeCell(6, 344, 1.2,"text");
+        file_xls.writeCell(6, 345, 1.24,"text");
+        file_xls.writeCell(6, 346, 0.02,"text");
 
         //  Marge brute (EBITDA/CA) 
         file_xls.writeCell(5, 390, 0.3,"0%");
@@ -674,8 +705,17 @@ public class Test {
         file_xls.writeCell(5, 393, 0.55,"0%");
         file_xls.writeCell(5, 394, 0.02,"0%");
 
+        //test
+        file_xls.writeCell(6, 390, 0.3,"text");
+        file_xls.writeCell(6, 391, 0.42,"text");
+        file_xls.writeCell(6, 392, 0.53,"text");
+        file_xls.writeCell(6, 393, 0.55,"text");
+        file_xls.writeCell(6, 394, 0.02,"text");
+
         //  0% TES 
         file_xls.writeCell(5, 417, 0.3,"0%");
+        file_xls.writeCell(6, 417, 0.3,"text");
+
 
         // Amortissement (ans)
         file_xls.writeCell(5, 460, 12);
