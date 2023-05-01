@@ -24,6 +24,7 @@ public class ExcelFile {
     private Sheet sheet;
     private File file;
     private int sheetNumber = 1;
+    private int lastDataRowNum =0;
 
     //constructors
     public ExcelFile() {
@@ -51,33 +52,48 @@ public class ExcelFile {
         this.sheetNumber = sheetNumber;
     }
 
+    
+
     /*
      * La méthode getLastDataRowNum() renvoie le numéro de la dernière ligne contenant au moins une donnée en parcourant les lignes 
      * depuis la dernière ligne jusqu'à la première ligne. La méthode isRowEmpty() vérifie si une ligne donnée est vide ou non en 
      * parcourant toutes les cellules de la ligne et en vérifiant si elles sont vides ou non.
      */
-    private int getLastDataRowNum() {
-        int lastDataRowNum = this.sheet.getLastRowNum();
-        //i represente l'index
-        for (int i = lastDataRowNum; i >= 0; i--) {
-            Row row = this.sheet.getRow(i); 
+    public int getLastDataRowNum() {
+        int lastRowNum = this.sheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 0; i--) {
+            Row row = this.sheet.getRow(i);
             if (row != null && !isRowEmpty(row)) {
+                this.lastDataRowNum =i;
                 return i;
             }
         }
-    
-        return -1; // Aucune ligne contenant des données trouvée
+        // Si aucune ligne non vide n'est trouvée, retourner -1
+        return -1;
     }
     
     private boolean isRowEmpty(Row row) {
         for (int j = row.getFirstCellNum(); j < row.getLastCellNum(); j++) {
             Cell cell = row.getCell(j);
+    
             if (cell != null && cell.getCellType() != CellType.BLANK) {
-                return false;
+                if (cell.getCellType() == CellType.FORMULA) {
+                    if (cell.getCachedFormulaResultType() != CellType.BLANK) {
+                        return false;
+                    }
+                } else if (cell.getCellStyle().getIndex() != 0) {
+                    return false;
+                } else if (cell.getCellType() == CellType.STRING || cell.getCellType() == CellType.NUMERIC) {
+                    if (!cell.getStringCellValue().trim().isEmpty()) {
+                        return false;
+                    }
+                }
             }
         }
+    
         return true;
     }
+    
     
     
     //methods Input output
@@ -132,14 +148,15 @@ public class ExcelFile {
      * Ajoute automatiquement la ou les données sur la ligne suivante 
      */
     public void writeCell(int column, Object value) throws IOException{
-        Cell cell = null;
-        if(this.sheet.getRow(getLastDataRowNum()) == null){
-            cell = this.sheet.createRow(getLastDataRowNum()).createCell(column-1);
+        Cell  cell = null;
+        int row = this.lastDataRowNum+1;
+        if((this.sheet.getRow(row) == null)){
+            cell = this.sheet.createRow(row).createCell(column-1);
         }
-        else if(this.sheet.getRow(getLastDataRowNum()).getCell(column-1) == null){
-            cell = this.sheet.getRow(getLastDataRowNum()).createCell(column-1);
+        else if(this.sheet.getRow(row).getCell(column-1) == null){
+            cell = this.sheet.getRow(row).createCell(column-1);
         }else{
-            cell = this.sheet.getRow(getLastDataRowNum()).getCell(column-1);
+            cell = this.sheet.getRow(row).getCell(column-1);
         }
         
         cell.setCellValue(value.toString());
@@ -150,10 +167,6 @@ public class ExcelFile {
         style.setDataFormat(dataFormat.getFormat("@"));
         cell.setCellStyle(style);
         
-        //mis a jour sur le fichier physique
-        FileOutputStream output = new FileOutputStream(this.file);
-        this.sheet.getWorkbook().write(output);
-        output.close();
     }
     /*
      * ecrit la donnée en precisant les coordonées exactes de la cellule
@@ -203,10 +216,6 @@ public class ExcelFile {
         else{
             cell.setCellValue("");
         }
-        //mis a jour sur le fichier physique
-        FileOutputStream output = new FileOutputStream(this.file);
-        this.sheet.getWorkbook().write(output);
-        output.close();
     }
     
     
@@ -260,10 +269,6 @@ public class ExcelFile {
         } else {
             cell.setCellValue("");
         }
-        // Write changes to file
-        FileOutputStream output = new FileOutputStream(this.file);
-        this.sheet.getWorkbook().write(output);
-        output.close();
     }
     
     
@@ -271,9 +276,18 @@ public class ExcelFile {
         this.sheetNumber = number-1;
         try {
             this.sheet = this.workbook.getSheetAt(sheetNumber);
+            this.lastDataRowNum = getLastDataRowNum();
         } catch (Exception e) {
             System.err.println("Vous essayez d'accéder à une feuille Alors qu'un problème a été détecté lors de l'ouverture du fichier");
         }
     }
-
+    public void close() throws IOException {
+        FileOutputStream output = new FileOutputStream(this.file);
+        //On positionne le curseur sur la ligne suivante pour une future insertion
+        //mis a jour sur le fichier physique
+        this.sheet.getWorkbook().write(output);
+        output.close();
+        this.workbook.close();
+        this.lastDataRowNum+=1;
+    }
 }

@@ -624,13 +624,14 @@ public class Test {
         double TRI;
     //************************FIN DECLARATION VARIABLES**************************** 
 
-        ExcelFile file_xls = new ExcelFile("Canevas1.xlsx"); 
-        file_xls.chooseSheet(4);
-        file_xls.writeCell(2, "file_xls");
-        file_xls.writeCell(3, 1_000_0000);
-        file_xls.writeCell(4, 0.95);
+        ExcelFile file_xls = new ExcelFile("FORSA.xlsx"); 
+        file_xls.chooseSheet(1);
+        file_xls.writeCell(2, "ANOTHER.DOCX");
+        file_xls.writeCell(3, 80_000_0000);
+        file_xls.writeCell(4, 1000.05);
         file_xls.writeCell(5, true);
         file_xls.writeCell(6, new Date());
+        file_xls.close();
        //********************************INSERTION****************************
         // file_xls.writeCell(5, 1, 1);
         // file_xls.writeCell(5, 2, "Commerces/ restauration");
